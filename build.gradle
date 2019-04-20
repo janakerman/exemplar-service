@@ -1,6 +1,8 @@
 plugins {
 	id 'org.springframework.boot' version '2.1.4.RELEASE'
 	id 'java'
+    id 'idea'
+    id "io.freefair.lombok" version "3.2.0"
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -16,5 +18,8 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.projectlombok:lombok:1.16.20'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.rest-assured:spring-mock-mvc:3.3.0'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
