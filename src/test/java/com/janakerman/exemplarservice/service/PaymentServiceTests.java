@@ -20,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.janakerman.exemplarservice.domain.Payment;
+import com.janakerman.exemplarservice.exception.PaymentValidationException;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
 
 @SpringBootTest
@@ -52,6 +53,14 @@ public class PaymentServiceTests {
 
         assertThat(savedPayment, equalTo(payment));
         assertThat(retPayment, equalTo(payment));
+    }
+
+    @Test(expected = PaymentValidationException.class)
+    public void createPaymentValidationFailure() {
+        Payment updatedPayment = Payment.builder()
+            .id(null)
+            .build();
+        paymentService.createPayment(updatedPayment);
     }
 
     @Test

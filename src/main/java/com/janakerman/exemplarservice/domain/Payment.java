@@ -9,4 +9,9 @@ import lombok.NoArgsConstructor;
 public class Payment  implements IPayment {
     private String id;
     private String organisationId;
+
+    @Override
+    public boolean isValidToSave() {
+        return id != null && organisationId != null;
+    }
 }

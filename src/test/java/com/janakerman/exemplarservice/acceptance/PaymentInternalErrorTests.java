@@ -17,7 +17,7 @@ import com.janakerman.exemplarservice.service.PaymentService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PaymentErrorTests extends BaseAcceptanceTests {
+public class PaymentInternalErrorTests extends BaseAcceptanceTests {
 
     @MockBean PaymentService paymentService;
 

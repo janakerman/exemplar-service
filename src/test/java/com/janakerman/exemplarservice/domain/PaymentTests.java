@@ -1,25 +1,35 @@
 package com.janakerman.exemplarservice.domain;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.junit.Test;
-
-import com.janakerman.exemplarservice.dto.Payment;
 
 public class PaymentTests {
 
     @Test
-    public void fromDomain() {
-
-        com.janakerman.exemplarservice.domain.Payment domain = com.janakerman.exemplarservice.domain.Payment.builder()
-            .organisationId("org1")
+    public void paymentValidateValidPayment() {
+        Payment payment = Payment.builder()
+            .id("id")
+            .organisationId("organsationId")
             .build();
+        assertThat(payment.isValidToSave(), equalTo(true));
+    }
 
-        Payment dto = Payment.fromDomain(domain);
+    @Test
+    public void paymentValidateSaveWithoutIdIsInvalid() {
+        Payment payment = Payment.builder()
+            .organisationId("organsationId")
+            .build();
+        assertThat(payment.isValidToSave(), equalTo(false));
+    }
 
-        assertThat(dto.getId(), equalTo(domain.getId()));
-        assertThat(dto.getOrganisationId(), equalTo(domain.getOrganisationId()));
+    @Test
+    public void paymentValidateSaveWithoutOrganisationIdIsInvalid() {
+        Payment payment = Payment.builder()
+            .id("id")
+            .build();
+        assertThat(payment.isValidToSave(), equalTo(false));
     }
 
 }

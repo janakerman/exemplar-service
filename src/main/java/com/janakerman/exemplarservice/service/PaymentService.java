@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.janakerman.exemplarservice.domain.Payment;
+import com.janakerman.exemplarservice.exception.PaymentValidationException;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
 
 @Component
@@ -20,7 +21,7 @@ public class PaymentService {
     }
 
     public Payment createPayment(Payment payment) {
-        // TODO: Validation of domain objects?
+        if (!payment.isValidToSave()) throw new PaymentValidationException();
         paymentRepository.create(payment);
         return payment;
     }

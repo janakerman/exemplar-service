@@ -1,15 +1,13 @@
-package com.janakerman.exemplarservice.domain;
+package com.janakerman.exemplarservice.dto;
 
 import static java.util.UUID.fromString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import java.util.UUID;
-
 import org.junit.Test;
 
-import com.janakerman.exemplarservice.dto.CreatePayment;
+import com.janakerman.exemplarservice.domain.Payment;
 
 public class CreatePaymentTests {
 
