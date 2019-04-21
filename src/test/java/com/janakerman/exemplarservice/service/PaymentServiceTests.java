@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +43,7 @@ public class PaymentServiceTests {
         Payment payment = Payment.builder()
             .id("id")
             .organisationId("org")
+            .amount(new BigDecimal("20.00"))
             .build();
         when(paymentRepository.save(eq(payment))).thenReturn(payment);
 

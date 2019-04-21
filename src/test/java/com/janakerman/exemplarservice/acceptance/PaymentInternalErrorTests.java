@@ -25,6 +25,7 @@ public class PaymentInternalErrorTests extends BaseAcceptanceTests {
     public void testInternalExceptionReturns500() {
         CreatePayment createPayment = CreatePayment.builder()
             .organisationId("org1")
+            .amount("20.00")
             .build();
 
         when(paymentService.createPayment(anyObject())).thenThrow(new RuntimeException("test exception"));
