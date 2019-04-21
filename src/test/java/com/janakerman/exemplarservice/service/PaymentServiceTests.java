@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,14 +26,17 @@ import com.janakerman.exemplarservice.repository.PaymentRepository;
 @RunWith(SpringRunner.class)
 public class PaymentServiceTests {
 
+    @MockBean
+    PaymentRepository paymentRepository;
 
-    @MockBean PaymentRepository paymentRepository;
+    @MockBean
+    PaymentValidationService paymentValidationService;
 
     private PaymentService paymentService;
 
     @Before
     public void setUp() {
-        paymentService = new PaymentService(paymentRepository);
+        paymentService = new PaymentService(paymentRepository, paymentValidationService);
     }
 
     @Test
@@ -41,14 +44,17 @@ public class PaymentServiceTests {
         Payment payment = Payment.builder()
             .id("id")
             .organisationId("org")
+            .amount(new BigDecimal("20.00"))
             .build();
-        when(paymentRepository.create(eq(payment))).thenReturn(payment);
+
+        when(paymentRepository.save(eq(payment))).thenReturn(payment);
 
         Payment retPayment = paymentService.createPayment(payment);
 
         ArgumentCaptor<Payment> argumentCaptor = ArgumentCaptor.forClass(Payment.class);
-        verify(paymentRepository).create(argumentCaptor.capture());
-        com.janakerman.exemplarservice.domain.Payment savedPayment = argumentCaptor.getValue();
+        verify(paymentRepository).save(argumentCaptor.capture());
+
+        Payment savedPayment = argumentCaptor.getValue();
 
         assertThat(savedPayment, equalTo(payment));
         assertThat(retPayment, equalTo(payment));
@@ -93,6 +99,29 @@ public class PaymentServiceTests {
 
         List<Payment> retPayments = paymentService.getPayments();
         assertThat(retPayments, equalTo(paymentList));
+    }
+
+    @Test
+    public void updatePayment() {
+        Payment updatedPayment = Payment.builder()
+            .id("1")
+            .organisationId("new org")
+            .build();
+
+        Payment oldPayment = Payment.builder()
+            .id("1")
+            .organisationId("old org")
+            .build();
+
+        when(paymentRepository.findById(updatedPayment.getId())).thenReturn(oldPayment);
+
+        paymentService.updatePayment(updatedPayment);
+
+        ArgumentCaptor<Payment> argumentCaptor = ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository).save(argumentCaptor.capture());
+        Payment savedPayment = argumentCaptor.getValue();
+
+        assertThat(savedPayment.getOrganisationId(), equalTo(updatedPayment.getOrganisationId()));
     }
 
     @Test

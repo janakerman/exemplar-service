@@ -13,16 +13,28 @@ import com.janakerman.exemplarservice.repository.PaymentRepository;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentValidationService paymentValidationService;
 
     @Autowired
-    public PaymentService(PaymentRepository paymentRepository) {
+    public PaymentService(
+        PaymentRepository paymentRepository,
+        PaymentValidationService paymentValidationService) {
         this.paymentRepository = paymentRepository;
+        this.paymentValidationService = paymentValidationService;
     }
 
     public Payment createPayment(Payment payment) {
-        // TODO: Validation of domain objects?
-        paymentRepository.create(payment);
-        return payment;
+        paymentValidationService.validateCreatePayment(payment);
+        return paymentRepository.save(payment);
+    }
+
+    public Payment updatePayment(Payment payment) {
+        paymentValidationService.validateUpdatePayment(payment);
+
+        Payment old = paymentRepository.findById(payment.getId());
+        Payment updated = old.updateFrom(payment);
+
+        return paymentRepository.save(updated);
     }
 
     public Optional<Payment> getPayment(String id) {

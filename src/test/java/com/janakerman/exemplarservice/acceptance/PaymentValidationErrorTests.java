@@ -14,20 +14,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.janakerman.exemplarservice.dto.CreatePayment;
 import com.janakerman.exemplarservice.service.PaymentService;
 
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PaymentErrorTests extends BaseAcceptanceTests {
-
-    @MockBean PaymentService paymentService;
+public class PaymentValidationErrorTests extends BaseAcceptanceTests {
 
     @Test
-    public void testInternalExceptionReturns500() {
+    public void testInvalidPaymentReturns400() {
         CreatePayment createPayment = CreatePayment.builder()
-            .organisationId("org1")
             .build();
-
-        when(paymentService.createPayment(anyObject())).thenThrow(new RuntimeException("test exception"));
 
         given()
             .contentType(JSON)
@@ -35,7 +29,7 @@ public class PaymentErrorTests extends BaseAcceptanceTests {
         .when()
             .post("/payments")
         .then()
-            .statusCode(500);
+            .statusCode(400);
     }
 
 }

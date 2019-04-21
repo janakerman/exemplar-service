@@ -132,6 +132,7 @@ public class PaymentControllerTests {
     public void createPayment() {
         CreatePayment createPayment = CreatePayment.builder()
             .organisationId("org1")
+            .amount("20.00")
             .build();
 
         when(paymentService.createPayment(notNull())).thenAnswer(invocation -> invocation.getArgument(0));
