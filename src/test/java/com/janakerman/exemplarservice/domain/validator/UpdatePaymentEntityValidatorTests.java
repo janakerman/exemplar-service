@@ -17,6 +17,22 @@ public class UpdatePaymentEntityValidatorTests {
         updatePaymentEntityValidator.validate(payment);
     }
 
+    @Test
+    public void validateUpdatePayment2DPAmountValid() {
+        Payment payment = validPayment()
+            .amount(new BigDecimal(20.00))
+            .build();
+        updatePaymentEntityValidator.validate(payment);
+    }
+
+    @Test
+    public void validateUpdatePaymentIntegerAmountValid() {
+        Payment payment = validPayment()
+            .amount(new BigDecimal(20))
+            .build();
+        updatePaymentEntityValidator.validate(payment);
+    }
+
     @Test(expected = PaymentValidationException.class)
     public void validateUpdatePaymentNegativePaymentsInvalid() {
         Payment payment = validPayment()
@@ -29,6 +45,14 @@ public class UpdatePaymentEntityValidatorTests {
     public void validateUpdatePaymentZeroPaymentInvalid() {
         Payment payment = validPayment()
             .amount(new BigDecimal(0))
+            .build();
+        updatePaymentEntityValidator.validate(payment);
+    }
+
+    @Test(expected = PaymentValidationException.class)
+    public void validateUpdatePaymentMoreThan2DPAmountInvalid() {
+        Payment payment = validPayment()
+            .amount(new BigDecimal(2.001))
             .build();
         updatePaymentEntityValidator.validate(payment);
     }

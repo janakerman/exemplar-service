@@ -12,8 +12,17 @@ public class CreatePaymentEntityValidatorTests {
     private final CreatePaymentEntityValidator createPaymentEntityValidator = new CreatePaymentEntityValidator();
 
     @Test
-    public void validateCreatePayment() {
+    public void validateCreatePayment2DPAmountValid() {
         Payment payment = validPayment()
+            .amount(new BigDecimal(20.00))
+            .build();
+        createPaymentEntityValidator.validate(payment);
+    }
+
+    @Test
+    public void validateCreatePaymentIntegerAmountValid() {
+        Payment payment = validPayment()
+            .amount(new BigDecimal(20))
             .build();
         createPaymentEntityValidator.validate(payment);
     }
@@ -46,7 +55,7 @@ public class CreatePaymentEntityValidatorTests {
     }
 
     @Test(expected = PaymentValidationException.class)
-    public void validateCreatePaymentNegativePaymentsInvalid() {
+    public void validateCreatePaymentNegativeAmountInvalid() {
         Payment payment = validPayment()
             .amount(new BigDecimal(-1))
             .build();
@@ -54,9 +63,17 @@ public class CreatePaymentEntityValidatorTests {
     }
 
     @Test(expected = PaymentValidationException.class)
-    public void validateCreatePaymentZeroPaymentInvalid() {
+    public void validateCreatePaymentZeroAmountInvalid() {
         Payment payment = validPayment()
             .amount(new BigDecimal(0))
+            .build();
+        createPaymentEntityValidator.validate(payment);
+    }
+
+    @Test(expected = PaymentValidationException.class)
+    public void validateCreatePaymentMoreThan2DPAmountInvalid() {
+        Payment payment = validPayment()
+            .amount(new BigDecimal(2.001))
             .build();
         createPaymentEntityValidator.validate(payment);
     }
@@ -65,7 +82,7 @@ public class CreatePaymentEntityValidatorTests {
         return Payment.builder()
             .id("id")
             .organisationId("organsationId")
-            .amount(new BigDecimal(20.0));
+            .amount(new BigDecimal(20.00));
     }
 
 }

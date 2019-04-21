@@ -14,6 +14,9 @@ public class CreatePaymentEntityValidator implements CreatePaymentValidator {
             throw new PaymentValidationException();
         }
 
-        if (payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) throw new PaymentValidationException();
+        BigDecimal amount = payment.getAmount();
+        if (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.scale() > 2) {
+            throw new PaymentValidationException();
+        }
     }
 }

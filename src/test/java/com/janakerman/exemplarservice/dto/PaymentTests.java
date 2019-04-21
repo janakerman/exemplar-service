@@ -32,6 +32,4 @@ public class PaymentTests {
         assertThat(dto.getAmount(), equalTo("20.00"));
     }
 
-
-
 }
