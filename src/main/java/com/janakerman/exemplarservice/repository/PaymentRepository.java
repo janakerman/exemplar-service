@@ -6,7 +6,7 @@ import com.janakerman.exemplarservice.domain.Payment;
 
 public interface PaymentRepository {
 
-    Payment create(Payment payment);
+    Payment save(Payment payment);
     Payment findById(String id);
     List<Payment> findAll();
     void delete(String id);

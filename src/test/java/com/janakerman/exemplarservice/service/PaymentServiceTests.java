@@ -43,13 +43,14 @@ public class PaymentServiceTests {
             .id("id")
             .organisationId("org")
             .build();
-        when(paymentRepository.create(eq(payment))).thenReturn(payment);
+        when(paymentRepository.save(eq(payment))).thenReturn(payment);
 
         Payment retPayment = paymentService.createPayment(payment);
 
         ArgumentCaptor<Payment> argumentCaptor = ArgumentCaptor.forClass(Payment.class);
-        verify(paymentRepository).create(argumentCaptor.capture());
-        com.janakerman.exemplarservice.domain.Payment savedPayment = argumentCaptor.getValue();
+        verify(paymentRepository).save(argumentCaptor.capture());
+
+        Payment savedPayment = argumentCaptor.getValue();
 
         assertThat(savedPayment, equalTo(payment));
         assertThat(retPayment, equalTo(payment));
@@ -102,6 +103,37 @@ public class PaymentServiceTests {
 
         List<Payment> retPayments = paymentService.getPayments();
         assertThat(retPayments, equalTo(paymentList));
+    }
+
+    @Test
+    public void updatePayment() {
+        Payment updatedPayment = Payment.builder()
+            .id("1")
+            .organisationId("new org")
+            .build();
+
+        Payment oldPayment = Payment.builder()
+            .id("1")
+            .organisationId("old org")
+            .build();
+
+        when(paymentRepository.findById(updatedPayment.getId())).thenReturn(oldPayment);
+
+        paymentService.updatePayment(updatedPayment);
+
+        ArgumentCaptor<Payment> argumentCaptor = ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository).save(argumentCaptor.capture());
+        Payment savedPayment = argumentCaptor.getValue();
+
+        assertThat(savedPayment.getOrganisationId(), equalTo(updatedPayment.getOrganisationId()));
+    }
+
+    @Test(expected = PaymentValidationException.class)
+    public void updatePaymentValidationFailure() {
+        Payment updatedPayment = Payment.builder()
+            .id(null)
+            .build();
+        paymentService.updatePayment(updatedPayment);
     }
 
     @Test

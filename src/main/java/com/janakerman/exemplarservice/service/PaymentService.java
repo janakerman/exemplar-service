@@ -22,8 +22,16 @@ public class PaymentService {
 
     public Payment createPayment(Payment payment) {
         if (!payment.isValidToSave()) throw new PaymentValidationException();
-        paymentRepository.create(payment);
-        return payment;
+        return paymentRepository.save(payment);
+    }
+
+    public Payment updatePayment(Payment payment) {
+        if (!payment.isValidToUpdate()) throw new PaymentValidationException();
+
+        Payment old = paymentRepository.findById(payment.getId());
+        Payment updated = old.updateFrom(payment);
+
+        return paymentRepository.save(updated);
     }
 
     public Optional<Payment> getPayment(String id) {

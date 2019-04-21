@@ -6,13 +6,16 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.janakerman.exemplarservice.dto.CreatePayment;
 import com.janakerman.exemplarservice.dto.Payment;
+import com.janakerman.exemplarservice.dto.UpdatePayment;
 import com.janakerman.exemplarservice.exception.PaymentNotFoundException;
 import com.janakerman.exemplarservice.service.PaymentService;
 
@@ -47,6 +50,24 @@ public class PaymentController {
         return Payment.fromDomain(
             paymentService.createPayment(
                 createPayment.toDomain()
+            )
+        );
+    }
+
+    @PutMapping("/payments")
+    public Payment updatePayment(@RequestBody UpdatePayment updatePayment) {
+        return Payment.fromDomain(
+            paymentService.createPayment(
+                updatePayment.toDomain()
+            )
+        );
+    }
+
+    @PatchMapping("/payments")
+    public Payment partialUpdatePayment(@RequestBody UpdatePayment updatePayment) {
+        return Payment.fromDomain(
+            paymentService.updatePayment(
+                updatePayment.toDomain()
             )
         );
     }

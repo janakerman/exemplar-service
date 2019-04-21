@@ -15,8 +15,9 @@ public class InMemoryPaymentRepository implements PaymentRepository {
     private Map<String, Payment> store = new HashMap<>();
 
     @Override
-    public Payment create(Payment payment) {
-        return store.put(payment.getId(), payment);
+    public Payment save(Payment payment) {
+        store.put(payment.getId(), payment);
+        return payment;
     }
 
     @Override
