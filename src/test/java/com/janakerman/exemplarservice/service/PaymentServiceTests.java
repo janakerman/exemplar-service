@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -21,21 +20,23 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.janakerman.exemplarservice.domain.Payment;
-import com.janakerman.exemplarservice.exception.PaymentValidationException;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class PaymentServiceTests {
 
+    @MockBean
+    PaymentRepository paymentRepository;
 
-    @MockBean PaymentRepository paymentRepository;
+    @MockBean
+    PaymentValidationService paymentValidationService;
 
     private PaymentService paymentService;
 
     @Before
     public void setUp() {
-        paymentService = new PaymentService(paymentRepository);
+        paymentService = new PaymentService(paymentRepository, paymentValidationService);
     }
 
     @Test
@@ -45,6 +46,7 @@ public class PaymentServiceTests {
             .organisationId("org")
             .amount(new BigDecimal("20.00"))
             .build();
+
         when(paymentRepository.save(eq(payment))).thenReturn(payment);
 
         Payment retPayment = paymentService.createPayment(payment);
@@ -56,14 +58,6 @@ public class PaymentServiceTests {
 
         assertThat(savedPayment, equalTo(payment));
         assertThat(retPayment, equalTo(payment));
-    }
-
-    @Test(expected = PaymentValidationException.class)
-    public void createPaymentValidationFailure() {
-        Payment updatedPayment = Payment.builder()
-            .id(null)
-            .build();
-        paymentService.createPayment(updatedPayment);
     }
 
     @Test
@@ -128,14 +122,6 @@ public class PaymentServiceTests {
         Payment savedPayment = argumentCaptor.getValue();
 
         assertThat(savedPayment.getOrganisationId(), equalTo(updatedPayment.getOrganisationId()));
-    }
-
-    @Test(expected = PaymentValidationException.class)
-    public void updatePaymentValidationFailure() {
-        Payment updatedPayment = Payment.builder()
-            .id(null)
-            .build();
-        paymentService.updatePayment(updatedPayment);
     }
 
     @Test

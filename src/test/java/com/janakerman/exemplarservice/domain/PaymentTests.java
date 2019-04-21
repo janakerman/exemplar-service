@@ -10,43 +10,6 @@ import org.junit.Test;
 public class PaymentTests {
 
     @Test
-    public void paymentValidateValidPayment() {
-        Payment payment = Payment.builder()
-            .id("id")
-            .organisationId("organsationId")
-            .amount(new BigDecimal(20.0))
-            .build();
-        assertThat(payment.isValidToSave(), equalTo(true));
-    }
-
-    @Test
-    public void paymentValidateSaveWithoutIdIsInvalid() {
-        Payment payment = Payment.builder()
-            .organisationId("organsationId")
-            .amount(new BigDecimal(20.0))
-            .build();
-        assertThat(payment.isValidToSave(), equalTo(false));
-    }
-
-    @Test
-    public void paymentValidateSaveWithoutOrganisationIdIsInvalid() {
-        Payment payment = Payment.builder()
-            .id("id")
-            .amount(new BigDecimal(20.0))
-            .build();
-        assertThat(payment.isValidToSave(), equalTo(false));
-    }
-
-    @Test
-    public void paymentValidateSaveWithoutAmountIdIsInvalid() {
-        Payment payment = Payment.builder()
-            .id("id")
-            .organisationId("org1")
-            .build();
-        assertThat(payment.isValidToSave(), equalTo(false));
-    }
-
-    @Test
     public void paymentUpdatedFromPartialPaymentUpdatesFields() {
         Payment original = Payment.builder()
             .id("id1")

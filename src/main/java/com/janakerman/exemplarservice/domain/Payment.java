@@ -26,18 +26,4 @@ public class Payment implements IPayment {
             .build();
     }
 
-    @Override
-    public boolean isValidToSave() {
-        if (id == null || organisationId == null || amount == null) return false;
-        return true;
-    }
-
-    @Override
-    public boolean isValidToUpdate() {
-        if (id == null) return false;
-        return true;
-    }
-
-
-
 }

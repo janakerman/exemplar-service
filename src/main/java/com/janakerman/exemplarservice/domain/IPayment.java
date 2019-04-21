@@ -8,6 +8,4 @@ public interface IPayment {
     BigDecimal getAmount();
 
     Payment updateFrom(Payment payment);
-    boolean isValidToSave();
-    boolean isValidToUpdate();
 }

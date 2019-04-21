@@ -7,26 +7,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.janakerman.exemplarservice.domain.Payment;
-import com.janakerman.exemplarservice.exception.PaymentValidationException;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
 
 @Component
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentValidationService paymentValidationService;
 
     @Autowired
-    public PaymentService(PaymentRepository paymentRepository) {
+    public PaymentService(
+        PaymentRepository paymentRepository,
+        PaymentValidationService paymentValidationService) {
         this.paymentRepository = paymentRepository;
+        this.paymentValidationService = paymentValidationService;
     }
 
     public Payment createPayment(Payment payment) {
-        if (!payment.isValidToSave()) throw new PaymentValidationException();
+        paymentValidationService.validateCreatePayment(payment);
         return paymentRepository.save(payment);
     }
 
     public Payment updatePayment(Payment payment) {
-        if (!payment.isValidToUpdate()) throw new PaymentValidationException();
+        paymentValidationService.validateUpdatePayment(payment);
 
         Payment old = paymentRepository.findById(payment.getId());
         Payment updated = old.updateFrom(payment);
