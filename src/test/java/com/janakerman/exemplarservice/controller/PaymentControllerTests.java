@@ -27,6 +27,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.janakerman.exemplarservice.dto.CreatePayment;
 import com.janakerman.exemplarservice.dto.Payment;
+import com.janakerman.exemplarservice.exception.PaymentNotFoundException;
 import com.janakerman.exemplarservice.service.PaymentService;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -63,7 +64,8 @@ public class PaymentControllerTests {
 
     @Test
     public void getPayment() {
-        when(paymentService.getPayment(anyString())).thenReturn(Optional.of(testPayment1));
+        when(paymentService.getPayment(anyString()))
+            .thenReturn(testPayment1);
 
         Payment payment = given()
             .when()
@@ -79,7 +81,8 @@ public class PaymentControllerTests {
 
     @Test
     public void getPaymentNonExistantReturns404() {
-        when(paymentService.getPayment(anyString())).thenReturn(Optional.empty());
+        when(paymentService.getPayment(anyString()))
+            .thenThrow(new PaymentNotFoundException());
 
         given()
             .when()

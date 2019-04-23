@@ -1,49 +1,77 @@
 package com.janakerman.exemplarservice.acceptance;
 
+import static com.amazonaws.services.dynamodbv2.model.KeyType.HASH;
+import static com.amazonaws.services.dynamodbv2.model.ScalarAttributeType.*;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.assertj.core.util.Lists;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.janakerman.exemplarservice.controller.PaymentController;
 import com.janakerman.exemplarservice.dto.CreatePayment;
 import com.janakerman.exemplarservice.dto.Payment;
 import com.janakerman.exemplarservice.dto.UpdatePayment;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
+import com.janakerman.exemplarservice.repository.dao.PaymentDao;
+import com.janakerman.exemplarservice.test.LocalDynamoDBCreationRule;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {
+    "amazon.dynamodb.endpoint=http://localhost:8000/",
+    "amazon.aws.accessKeyId=access",
+    "amazon.aws.secretKey=secret"
+})
 public class PaymentTests extends BaseAcceptanceTests {
 
+    private static final String TEST_TABLE_NAME = "payments";
+
+    @ClassRule public static final LocalDynamoDBCreationRule dynamoDB = new LocalDynamoDBCreationRule();
+
     @Autowired ObjectMapper objectMapper;
-
     @Autowired WebApplicationContext webApplicationContext;
-
     @Autowired PaymentController controller;
-
     @Autowired PaymentRepository repository;
 
     @Before
     public void setUpMockMvc() {
         RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
+
+        dynamoDB.getAmazonDynamoDB().createTable(
+            singletonList(new AttributeDefinition("id", S)),
+            TEST_TABLE_NAME,
+            singletonList(new KeySchemaElement("id", HASH)),
+            new ProvisionedThroughput(1L, 1L)
+        );
+    }
+
+    @After
+    public void tearDown() {
+        dynamoDB.getAmazonDynamoDB().deleteTable(TEST_TABLE_NAME);
     }
 
     @Test
@@ -101,10 +129,10 @@ public class PaymentTests extends BaseAcceptanceTests {
         assertThat(payment.getOrganisationId(), equalTo(createCommand.getOrganisationId()));
         assertThat(payment.getAmount(), equalTo(createCommand.getAmount()));
 
-        com.janakerman.exemplarservice.domain.Payment paymentDomain = repository.findAll().get(0);
+        PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
         assertThat(paymentDomain.getId(), notNullValue());
         assertThat(paymentDomain.getOrganisationId(), equalTo(createCommand.getOrganisationId()));
-        assertThat(paymentDomain.getAmount(), equalTo(new BigDecimal(createCommand.getAmount())));
+        assertThat(paymentDomain.getAmount(), equalTo("20.00"));
     }
 
     @Test
@@ -132,10 +160,10 @@ public class PaymentTests extends BaseAcceptanceTests {
         assertThat(updatedPayment.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));
         assertThat(updatedPayment.getAmount(), equalTo(updateCommand.getAmount()));
 
-        com.janakerman.exemplarservice.domain.Payment paymentDomain = repository.findAll().get(0);
+        PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
         assertThat(paymentDomain.getId(), equalTo(updateCommand.getId()));
         assertThat(paymentDomain.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));
-        assertThat(paymentDomain.getAmount(), equalTo(new BigDecimal(updateCommand.getAmount())));
+        assertThat(paymentDomain.getAmount(), equalTo("30.00"));
     }
 
     @Test
@@ -160,7 +188,7 @@ public class PaymentTests extends BaseAcceptanceTests {
         .extract()
             .as(Payment.class);
 
-        com.janakerman.exemplarservice.domain.Payment paymentDomain = repository.findAll().get(0);
+        PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
 
         // Organisation field is updated.
         assertThat(updatedPayment.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));
@@ -171,7 +199,7 @@ public class PaymentTests extends BaseAcceptanceTests {
         assertThat(updatedPayment.getAmount(), equalTo(createdPayment.getAmount()));
 
         assertThat(paymentDomain.getId(), equalTo(createdPayment.getId()));
-        assertThat(paymentDomain.getAmount(), equalTo(new BigDecimal(createdPayment.getAmount())));
+        assertThat(paymentDomain.getAmount(), equalTo("20.00"));
     }
 
     @Test
@@ -184,7 +212,7 @@ public class PaymentTests extends BaseAcceptanceTests {
             .then()
                 .statusCode(200);
 
-        assertThat(repository.findById(payment.getId()), nullValue());
+        assertThat(repository.findById(payment.getId()).isPresent(), equalTo(false));
     }
 
     private Payment createPayment(CreatePayment createPayment) {
