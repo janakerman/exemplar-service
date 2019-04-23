@@ -28,3 +28,9 @@ HELP.md
 
 ### VS Code ###
 .vscode/
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+deployment/terraform.tfstate
+deployment/terraform.tfstate.backup
