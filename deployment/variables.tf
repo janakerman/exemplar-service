@@ -26,3 +26,7 @@ variable "app_image" {
 variable "app_count" {
   default     = ""
 }
+
+variable "table_name" {
+  default     = "payments"
+}

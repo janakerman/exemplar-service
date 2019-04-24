@@ -1,6 +1,54 @@
 provider "aws" {
   region = "${var.aws_region}"
 }
+resource "aws_iam_role" "fargate_role" {
+  name = "fargate_role"
+
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+            "Service": [
+                "s3.amazonaws.com",
+                "lambda.amazonaws.com",
+                "ecs.amazonaws.com"
+            ]
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
+//resource "aws_iam_role" "fargate_role" {
+//  name = "fargate_role"
+//
+//  policy = <<EOF
+//{
+//  "Version": "2012-10-17",
+//  "Statement": [
+//    {
+//      "Effect": "Allow",
+//      "Action": [
+//        "ecr:GetAuthorizationToken",
+//        "ecr:BatchCheckLayerAvailability",
+//        "ecr:GetDownloadUrlForLayer",
+//        "ecr:BatchGetImage",
+//        "logs:CreateLogStream",
+//        "logs:PutLogEvents"
+//      ],
+//      "Resource": "*"
+//    }
+//  ]
+//}
+//EOF
+//
+//}
 
 # Fetch AZs in the current region
 data "aws_availability_zones" "available" {}
@@ -43,6 +91,11 @@ resource "aws_alb_target_group" "app" {
   protocol    = "HTTP"
   vpc_id      = "${aws_vpc.main.id}"
   target_type = "ip"
+
+  health_check {
+    path = "/payments"
+    matcher = "200"
+  }
 }
 
 # Redirect all traffic from the ALB to the target group
@@ -115,6 +168,7 @@ resource "aws_ecs_task_definition" "app" {
 [
   {
     "cpu": ${var.fargate_cpu},
+    "executionRoleArn": "${aws_iam_role.fargate_role.arn}",
     "image": "${var.app_image}",
     "memory": ${var.fargate_memory},
     "name": "app",
@@ -124,7 +178,15 @@ resource "aws_ecs_task_definition" "app" {
         "containerPort": ${var.app_port},
         "hostPort": ${var.app_port}
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+          "awslogs-group": "exemplar-service",
+          "awslogs-region": "${var.aws_region}",
+          "awslogs-stream-prefix": "exemplar-service"
+      }
+    }
   }
 ]
 DEFINITION
