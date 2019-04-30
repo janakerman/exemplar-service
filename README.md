@@ -1,48 +1,187 @@
 # Exemplar Service
 
-A fictional payment service acting as my idea of an exemplar SpringBoot microservice.
+A fictional payment service acting as my idea of an exemplar SpringBoot microservice. Temporarily hosted at http://exemplar-service.janakerman.co.uk.
 
-Example service is running at `http://tf-ecs-chat-188386310.eu-west-2.elb.amazonaws.com`.
-
-e.g
 ```bash
-$ curl -X POST -H "Content-Type: application/json" --data '{"organisationId":"MyOrg","amount":"100.00"}' tf-ecs-chat-188386310.eu-west-2.elb.amazonaws.com/payments
-{"id":"381e5424-b68a-4970-9596-1c31aea3752d","organisationId":"MyOrg","amount":"100.00"}
+$ curl -X POST -H "Content-Type: application/json" --data '{"organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}' exemplar-service.janakerman.co.uk/payments
+{"id":"23f93278-db5d-4000-bd83-7f804f482da5","organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}                                                                                  
 
-$ curl -X POST -H "Content-Type: application/jsonelb.amazonaws.com/payments":"MyOrg","amount":"100.00"}' tf-ecs-chat-188386310.eu-west-2.e
-{"id":"de5ad819-7073-45de-8bc4-0df2e4402a14","organisationId":"MyOrg","amount":"100.00"}
+$ curl -X POST -H "Content-Type: application/json" --data '{"organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}' exemplar-service.janakerman.co.uk/payments                                          
+{"id":"7bfab292-442a-47ff-806f-d262fc98e846","organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}                                                                                  
 
-$ curl -X POST -H "Content-Type: application/jsonelb.amazonaws.com/payments":"MyOrg","amount":"100.00"}' tf-ecs-chat-188386310.eu-west-2.e
-{"id":"53de8435-d542-4b14-9ff1-f89751f745ea","organisationId":"MyOrg","amount":"100.00"}
+$ curl -X POST -H "Content-Type: application/json" --data '{"organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}' exemplar-service.janakerman.co.uk/payments                                          
+{"id":"1bd1d063-ed49-43f1-a471-a27bbd575408","organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}                                                                                  
 
-$ curl -X GET -H "Content-Type: application/json" tf-ecs-chat-188386310.eu-west-2.elb.amazonaws.com/payments
+$ curl -X GET -H "Content-Type: application/json" exemplar-service.janakerman.co.uk/payments
 [
-  {"id":"381e5424-b68a-4970-9596-1c31aea3752d","organisationId":"MyOrg","amount":"100.00"},
-  {"id":"de5ad819-7073-45de-8bc4-0df2e4402a14","organisationId":"MyOrg","amount":"100.00"},
-  {"id":"53de8435-d542-4b14-9ff1-f89751f745ea","organisationId":"MyOrg","amount":"100.00"}
-]
+    {"id":"7bfab292-442a-47ff-806f-d262fc98e846","organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}},
+    {"id":"23f93278-db5d-4000-bd83-7f804f482da5","organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}},
+    {"id":"1bd1d063-ed49-43f1-a471-a27bbd575408","organisationId":"MyOrg","amount":{"value":"100.00","currencyCode":"GBP"}}
+]  
 ```
 
-# Deployment
+## Deploying the Service
+
+The `/deployment` folder contains Terraform resources to deploy the dockerised application onto AWS Fargate, a container
+orchestration service.
 
 Prerequisites:
-- Install Terraform 
+- Install Terraform
+- AWS credentials configured
 
-1. Build local image and tag with repository. e.g
+1. Build local Docker image and tag with repository. e.g
 
     `docker build --tag janakerman/exemplar-service`
 
-2. Push docker image to repository. This would be part of a CI pipeline after tests pass.
+2. Push Docker image to repository. This would be part of a CI pipeline after tests pass.
 
     `docker push janakerman/exemplar-service`
     
-3. Initialize AWS Fargate cluster.
+3. Initialize AWS Fargate cluster and deploy the application.
 
-    ```
-    cd deployment
-    terraform init
-    terraform plan -out plan.tf
-    terraform apply plan.tf
-    ```
+```
+cd deployment
+terraform init
+terraform plan -out plan.tf
+terraform apply plan.tf
+```
 
+## Design
+
+### Frameworks / Libraries
+
+* `SpringBoot` was chosen as it requires very little configuration and has sensible defaults for most web services.
+* `Gradle` was chosen for dependency management, due to the easy integration with SpringBoot.
+* `Spring Data` provides easy integration with repositories, in this example, with DynamoDB.
+* `SpringBoot Actuator` adds production grade features to a service, such as health check endpoints.
+* `Lombok` uses annotations to reduce boilerplate code, keeping the intent of domain and DTO classes clear.
+
+### Rest API
+
+API design is a typical RESTful design and centers around the Payment resource at /payments. Format accepted by the server
+is `application/json`.
+
+It allows the following methods:
+
+- GET /payments - Get all payments. If query functionality was to be added, it would also be against this endpoint.
+- GET /payments/{ID} - Get payment by ID.
+- POST /payments - Create a payment. Payment ID generated by server.
+- PUT /payments - Create/update a payment. Complete payment resource provided. Will replace existing payment if ID exists.
+- PATCH /payments - Update an existing payment. Payment ID required, other fields optional. Updates an existing Payment.
+- DELETE /payments/{ID} - Delete a payment by ID.
+
+The payment API exposes payment amounts as an object containing string `value` and `currencyCode`. The maximum number of
+decimal places is determined by the default number of decimal places for the given currency any payments with units smaller 
+than this are rejected. E.g
+
+* `{"value":"100.00","currencyCode":"GBP"}` - valid
+* `{"value":"100.001","currencyCode":"GBP"}` - invalid
+* `{"value":"100.000","currencyCode":"JOD"}` - valid
+* `{"value":"100.0001","currencyCode":"GBP"}` - invalid
+
+Values returned from the service are rounded to the currencies default number of decimal places, with rounding mode 'round up'.
+Since the service owns its database, the limitation above should avoid these occurrences.
+
+The use of a string value in the API removes any issues with precision or accuracy and leaves it to the client to parse the value as makes
+sense for their language/environment. This could be extended to provide additional integer `subValue` (i.e pence) and potentially
+a `displayValue`.
+
+### Layers
+
+#### Controller Layer
+
+The **Controller layer** transforms the external API representation of a payment (Domain Transfer Objects/DTOs) into the internal
+payment domain objects.
+
+It communicates with the **Service layer** to invoke business logic operations, and Payment domain from the **Service layer** into 
+DTOs for response to the client.
+
+In the SpringBoot framework, it is also responsible for configuring the REST endpoints and defining the service's API via annotations.
+
+##### Validation
+
+Minimal validation takes place in this layer, simply that the DTO can successfully be marshaled into the Domain representation. 
+
+#### Service Layer
+
+The **Service layer**'s interface accepts **Domain** objects only and is the layer that should contain business logic and communicate
+with the **Domain** objects. In this example service there is very little business logic due to simplicity of domain. The **Service layer** 
+communicates with other external interfaces that the service depends on to function.
+
+In this example, the **Service layer** communicates with the **Repository layer** to persist payment domain objects. It calls onto
+classes in the Repository layer to transform the Domain objects into the database representation (Data Access Objects).
+
+##### Validation
+
+Payment domain objects passed to the service layer are validated for the command they are performing, for example, create methods
+validate payment objects for all required fields, whereas update methods are only validated to contain an `id` field. Validation
+failures throw an exception which is handled by the **Controller layer**.
+
+#### Domain
+
+The Payment Domain object is similar to the DTO except that it stores the amount's `value` as a BigDecimal for arbitrary precision.
+
+#### Repository
+
+The **Repository layer** is responsible for persisting entities (DAO). The persistence option for this layer was chosen to be a 
+NoSQL store, DynamoDB. NoSQL databases are quick to get up and running with due to an implied schema rather than one enforced with
+constraints and relationships. DynamoDB provides a production ready document store, suitable for operating at scale, with very little up-front effort.
+
+A NoSQL store fits the requirements of this service, and whilst NoSQL stores can be very powerful with careful indexing,
+it is appreciated that as the service evolves, the schema-less nature of a NoSQL store may become limiting if complex relational
+queries are required.
+
+The fact that very little time was put into the configuration service means that the replacement of the store as the requirements
+evolve would not result in significant wasted development time.
+
+### Testing
+
+There are three levels of tests covering the service's functionality, demonstrating the typical test pyramid.
+
+The largest number of tests are **unit tests**, covering small units of functionality, providing very fast feedback during
+development.
+
+The next level of tests would be **integration tests**. This tests cover integrations of multiple units of functionality. 
+The controller tests are the closest example of an integration test, as they test Spring controller wiring, any exception
+handling and use the Rest Assured library to assert aspects of the request. These tests are slower than unit tests and
+are thus fewer, but are less brittle.
+
+The next level of tests are **acceptance tests**. These are the slowest, and are thus the fewest. Acceptance tests in this
+project cover the core business requirements of the application.
+
+#### Potential Further Testing
+
+1. Container based tests. A simple set of tests to ensure that the containerised service is still functional. Performed 
+on a build server prior to deployment of the service to a CI environment.
+1. Contract based testing. Tests provided by the service's clients to ensure that breaking changes are not introduced to
+client inadvertently. Performed on a build server prior to deployment of the service to a CI environment.
+1. Smoke/regression packs in CI environments.
+
+### Logging
+
+Minimal logging has been added to the service but a production ready service would typically have ample logging along
+critical paths to allow for offline debugging.
+
+### Deployment Architecture
+
+Infrastructure is managed using `Terraform` which is a declarative tool for provisioning infrastructure. Terraform provides
+a provider for AWS, the target platform. This is an quick example deployment and is not production ready itself.
+
+The application is deployed on ECS Fargate cluster, a container orchestration service. This provides a quick way to get an application
+deployed without having to provision EC2 instances. The application is fronted by an Application Load Balancer to spread the load
+over two services.
+
+#### Availability
+The ECS Service is spread over two AZs for moderate amount of availability. Health checks performed by the ALB remove unhealthy
+target tasks replacing with new task instances.
+
+#### Security 
+The ALB has a security group allowing access from the open internet over port 80. The ECS service has a security group that only
+allows traffic from the ALB over port 8080.
+
+The ALB and the ECS Service sit within a public subnet. Since access to the service is forced via the ALB, the service could be
+moved to a private subnet for improved security.
+
+An IAM role/polciy has been created giving the EC2 task access to the required services. This could be further locked down to
+limit the tasks to exactly the permissions required.
 
