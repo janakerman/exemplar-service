@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.janakerman.exemplarservice.dto.CreatePayment;
 import com.janakerman.exemplarservice.dto.Payment;
 import com.janakerman.exemplarservice.dto.UpdatePayment;
-import com.janakerman.exemplarservice.exception.PaymentNotFoundException;
 import com.janakerman.exemplarservice.service.PaymentService;
 
 @RestController("/payments")
@@ -33,7 +32,6 @@ public class PaymentController {
     public Payment getPayment(@PathVariable(value = "paymentId") String paymentId) {
         return Payment.fromDomain(
             paymentService.getPayment(paymentId)
-                .orElseThrow(PaymentNotFoundException::new)
         );
     }
 

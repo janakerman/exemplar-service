@@ -27,8 +27,4 @@ public abstract class BaseAcceptanceTests {
         RestAssured.port = port;
     }
 
-    @After
-    public void teardown() {
-        repository.deleteAll();
-    }
 }
