@@ -1,7 +1,5 @@
 package com.janakerman.exemplarservice.domain;
 
-import java.math.BigDecimal;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -17,7 +15,7 @@ public class Payment implements IPayment {
 
     private String id;
     private String organisationId;
-    private BigDecimal amount;
+    private Amount amount;
 
     @Override
     public Payment updateFrom(Payment payment) {

@@ -7,11 +7,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.janakerman.exemplarservice.domain.Amount;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +47,7 @@ public class PaymentServiceTests {
         Payment payment = Payment.builder()
             .id("id")
             .organisationId("org")
-            .amount(new BigDecimal("20.00"))
+            .amount(Amount.of("20.00", "GBP"))
             .build();
 
         when(paymentRepository.save(any())).thenReturn(PaymentDao.toDao(payment));
@@ -69,7 +69,7 @@ public class PaymentServiceTests {
         Payment payment = Payment.builder()
             .id("id")
             .organisationId("org")
-            .amount(new BigDecimal("20.00"))
+            .amount(Amount.of("20.00", "GBP"))
             .build();
 
         when(paymentRepository.findById(payment.getId()))
@@ -94,12 +94,12 @@ public class PaymentServiceTests {
         Payment payment1 = Payment.builder()
             .id("1")
             .organisationId("org1")
-            .amount(BigDecimal.ONE)
+            .amount(Amount.of("1", "GBP"))
             .build();
         Payment payment2 = Payment.builder()
             .id("2")
             .organisationId("org2")
-            .amount(BigDecimal.ONE)
+            .amount(Amount.of("1", "GBP"))
             .build();
 
         List<Payment> paymentList = Arrays.asList(payment1, payment2);
@@ -122,7 +122,7 @@ public class PaymentServiceTests {
         Payment oldPayment = Payment.builder()
             .id("1")
             .organisationId("old org")
-            .amount(BigDecimal.ONE)
+            .amount(Amount.of("1", "GBP"))
             .build();
 
         when(paymentRepository.findById(updatedPayment.getId()))
@@ -145,7 +145,7 @@ public class PaymentServiceTests {
         Payment updatedPayment = Payment.builder()
             .id("1")
             .organisationId("new org")
-            .amount(BigDecimal.ONE)
+            .amount(Amount.of("1", "GBP"))
             .build();
 
         when(paymentRepository.findById(updatedPayment.getId()))

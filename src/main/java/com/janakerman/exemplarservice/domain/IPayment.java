@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public interface IPayment {
     String getId();
     String getOrganisationId();
-    BigDecimal getAmount();
+    Amount getAmount();
 
     Payment updateFrom(Payment payment);
 }

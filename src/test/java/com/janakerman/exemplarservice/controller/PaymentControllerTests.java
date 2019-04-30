@@ -12,10 +12,14 @@ import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 
+import com.janakerman.exemplarservice.domain.Amount;
+import com.janakerman.exemplarservice.exception.PaymentValidationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,11 +55,14 @@ public class PaymentControllerTests {
         testPayment1 = com.janakerman.exemplarservice.domain.Payment.builder()
             .id("id1")
             .organisationId("org1")
+            .amount(Amount.of("20.00", "GBP"))
             .build();
 
         testPayment2 = com.janakerman.exemplarservice.domain.Payment.builder()
             .id("id2")
             .organisationId("org2")
+            .amount(Amount.of("30.00", "JOD"))
+
             .build();
 
         testPayments.add(testPayment1);
@@ -77,6 +84,8 @@ public class PaymentControllerTests {
 
         assertThat(payment.getId(), equalTo(testPayment1.getId()));
         assertThat(payment.getOrganisationId(), equalTo(testPayment1.getOrganisationId()));
+        assertThat(payment.getAmount().getValue(), equalTo(testPayment1.getAmount().getAmount().toString()));
+        assertThat(payment.getAmount().getCurrencyCode(), equalTo(testPayment1.getAmount().getCurrency().toString()));
     }
 
     @Test
@@ -109,10 +118,14 @@ public class PaymentControllerTests {
         Payment payment1 = paymentMatchingId(payments, testPayment1.getId());
         assertThat(payment1.getId(), equalTo(testPayment1.getId()));
         assertThat(payment1.getOrganisationId(), equalTo(testPayment1.getOrganisationId()));
+        assertThat(payment1.getAmount().getValue(), equalTo(testPayment1.getAmount().getAmount().toString()));
+        assertThat(payment1.getAmount().getCurrencyCode(), equalTo(testPayment1.getAmount().getCurrency().toString()));
 
         Payment payment2 = paymentMatchingId(payments, testPayment2.getId());
         assertThat(payment2.getId(), equalTo(testPayment2.getId()));
         assertThat(payment2.getOrganisationId(), equalTo(testPayment2.getOrganisationId()));
+        assertThat(payment2.getAmount().getValue(), equalTo("30.000"));
+        assertThat(payment2.getAmount().getCurrencyCode(), equalTo("JOD"));
     }
 
     @Test
@@ -135,7 +148,7 @@ public class PaymentControllerTests {
     public void createPayment() {
         CreatePayment createPayment = CreatePayment.builder()
             .organisationId("org1")
-            .amount("20.00")
+            .amount(of("20.00", "GBP"))
             .build();
 
         when(paymentService.createPayment(notNull())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -159,11 +172,32 @@ public class PaymentControllerTests {
 
         assertThat(savedPayment.getId(), notNullValue());
         assertThat(savedPayment.getOrganisationId(), equalTo(createPayment.getOrganisationId()));
+        assertThat(savedPayment.getAmount().getAmount(), equalTo(new BigDecimal(createPayment.getAmount().getValue())));
+        assertThat(savedPayment.getAmount().getCurrency(), equalTo(Currency.getInstance(createPayment.getAmount().getCurrencyCode())));
+    }
+
+    @Test
+    public void getPayments_InvalidPaymentReturns400() {
+        when(paymentService.getPayments())
+                .thenThrow(new PaymentValidationException());
+
+        given()
+                .when()
+                .get("/payments")
+            .then()
+                .statusCode(400);
     }
 
     public Payment paymentMatchingId(List<Payment> payments, String id) {
         Optional<Payment> matchedPayment = payments.stream().filter(payment -> payment.getId().equals(id)).findFirst();
         return matchedPayment.orElse(null);
+    }
+
+    private com.janakerman.exemplarservice.dto.Amount of(String amount, String currencyCode) {
+        return com.janakerman.exemplarservice.dto.Amount.builder()
+                .value(amount)
+                .currencyCode(currencyCode)
+                .build();
     }
 
 }

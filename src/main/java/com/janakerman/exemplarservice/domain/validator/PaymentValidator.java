@@ -1,5 +1,6 @@
 package com.janakerman.exemplarservice.domain.validator;
 
+import com.janakerman.exemplarservice.domain.Amount;
 import com.janakerman.exemplarservice.domain.Payment;
 import com.janakerman.exemplarservice.exception.PaymentValidationException;
 
@@ -22,9 +23,10 @@ public interface PaymentValidator {
         }
     }
 
-    static void validateAmount(BigDecimal amount) {
+    static void validateAmount(Amount amount) {
         if (amount != null &&
-                (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.scale() > 2)) {
+                (amount.getAmount().compareTo(BigDecimal.ZERO) <= 0 ||
+                amount.getAmount().scale() > amount.getCurrency().getDefaultFractionDigits())) {
             throw new PaymentValidationException();
         }
     }

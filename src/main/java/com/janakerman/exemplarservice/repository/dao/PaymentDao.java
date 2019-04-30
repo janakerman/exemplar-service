@@ -1,10 +1,7 @@
 package com.janakerman.exemplarservice.repository.dao;
 
-import java.math.BigDecimal;
-
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
+import com.janakerman.exemplarservice.domain.Amount;
 import com.janakerman.exemplarservice.domain.Payment;
 
 import lombok.AllArgsConstructor;
@@ -22,7 +19,7 @@ import lombok.Setter;
 public class PaymentDao {
     private String id;
     private String organisationId;
-    private String amount;
+    private Amount amount;
 
     @DynamoDBHashKey
     public String getId() {
@@ -35,7 +32,8 @@ public class PaymentDao {
     }
 
     @DynamoDBAttribute
-    public String getAmount() {
+    @DynamoDBTypeConvertedJson
+    public Amount getAmount() {
         return amount;
     }
 
@@ -43,7 +41,7 @@ public class PaymentDao {
         return PaymentDao.builder()
             .id(payment.getId())
             .organisationId(payment.getOrganisationId())
-            .amount(payment.getAmount().toString())
+            .amount(payment.getAmount())
             .build();
     }
 
@@ -51,7 +49,7 @@ public class PaymentDao {
         return Payment.builder()
             .id(this.getId())
             .organisationId(this.getOrganisationId())
-            .amount(new BigDecimal(this.getAmount()))
+            .amount(this.getAmount())
             .build();
     }
 }

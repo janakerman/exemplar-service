@@ -6,35 +6,33 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 import org.junit.Test;
 
 import com.janakerman.exemplarservice.domain.Payment;
-import com.janakerman.exemplarservice.exception.PaymentValidationException;
 
 public class CreatePaymentTests {
 
     @Test
-    public void toDomain() {
+    public void toDomainWithValidValues() {
         CreatePayment createPayment = CreatePayment.builder()
+            .amount(amount("20.00", "GBP"))
             .organisationId("org1")
-            .amount("20.00")
             .build();
 
         Payment domain = createPayment.toDomain();
 
         assertThat(fromString(domain.getId()), notNullValue());
         assertThat(domain.getOrganisationId(), equalTo(createPayment.getOrganisationId()));
-        assertThat(domain.getAmount(), equalTo(new BigDecimal("20.00")));
+        assertThat(domain.getAmount().getAmount(), equalTo(new BigDecimal("20.00")));
+        assertThat(domain.getAmount().getCurrency(), equalTo(Currency.getInstance("GBP")));
     }
 
-    @Test(expected = PaymentValidationException.class)
-    public void toDomainNonNumericAmountThrows() {
-        CreatePayment createPayment = CreatePayment.builder()
-            .organisationId("org1")
-            .amount("non numeric")
-            .build();
-
-        createPayment.toDomain();
+    private static Amount amount(String value, String currencyCode) {
+        return Amount.builder()
+                .value(value)
+                .currencyCode(currencyCode).
+                        build();
     }
 }

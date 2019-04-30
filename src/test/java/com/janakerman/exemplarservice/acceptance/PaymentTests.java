@@ -10,9 +10,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 
+import com.janakerman.exemplarservice.dto.Amount;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Before;
@@ -132,7 +135,8 @@ public class PaymentTests extends BaseAcceptanceTests {
         PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
         assertThat(paymentDomain.getId(), notNullValue());
         assertThat(paymentDomain.getOrganisationId(), equalTo(createCommand.getOrganisationId()));
-        assertThat(paymentDomain.getAmount(), equalTo("20.00"));
+        assertThat(paymentDomain.getAmount().getAmount(), equalTo(new BigDecimal("20.00")));
+        assertThat(paymentDomain.getAmount().getCurrency(), equalTo(Currency.getInstance("GBP")));
     }
 
     @Test
@@ -163,7 +167,8 @@ public class PaymentTests extends BaseAcceptanceTests {
         PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
         assertThat(paymentDomain.getId(), equalTo(updateCommand.getId()));
         assertThat(paymentDomain.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));
-        assertThat(paymentDomain.getAmount(), equalTo("30.00"));
+        assertThat(paymentDomain.getAmount().getAmount(), equalTo(new BigDecimal("30.00")));
+        assertThat(paymentDomain.getAmount().getCurrency(), equalTo(Currency.getInstance("GBP")));
     }
 
     @Test
@@ -199,7 +204,8 @@ public class PaymentTests extends BaseAcceptanceTests {
         assertThat(updatedPayment.getAmount(), equalTo(createdPayment.getAmount()));
 
         assertThat(paymentDomain.getId(), equalTo(createdPayment.getId()));
-        assertThat(paymentDomain.getAmount(), equalTo("20.00"));
+        assertThat(paymentDomain.getAmount().getAmount(), equalTo(new BigDecimal("20.00")));
+        assertThat(paymentDomain.getAmount().getCurrency(), equalTo(Currency.getInstance("GBP")));
     }
 
     @Test
@@ -234,15 +240,15 @@ public class PaymentTests extends BaseAcceptanceTests {
 
     private CreatePayment.CreatePaymentBuilder createPaymentBuilder() {
         return CreatePayment.builder()
-            .amount("20.00")
-            .organisationId("org1");
+                .amount(Amount.builder().value("20.00").currencyCode("GBP").build())
+                .organisationId("org1");
     }
 
     private UpdatePayment.UpdatePaymentBuilder updatePaymentBuilder() {
         return UpdatePayment.builder()
-            .id("id")
-            .amount("30.00")
-            .organisationId("org1");
+                .id("id")
+                .amount(Amount.builder().value("30.00").currencyCode("GBP").build())
+                .organisationId("org1");
     }
 
 }

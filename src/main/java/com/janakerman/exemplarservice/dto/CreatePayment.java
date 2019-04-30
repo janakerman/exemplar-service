@@ -1,38 +1,27 @@
 package com.janakerman.exemplarservice.dto;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.janakerman.exemplarservice.domain.Payment;
-import com.janakerman.exemplarservice.exception.PaymentValidationException;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class CreatePayment {
 
     private String organisationId;
-    private String amount;
+    private Amount amount;
 
-    public com.janakerman.exemplarservice.domain.Payment toDomain() {
-        BigDecimal amount;
-        try {
-            amount = new BigDecimal(this.amount);
-        } catch (Exception e) {
-            throw new PaymentValidationException();
-        }
-
+    public Payment toDomain() {
         return Payment.builder()
-            .id(UUID.randomUUID().toString())
-            .organisationId(organisationId)
-            .amount(amount)
-            .build();
+                    .id(UUID.randomUUID().toString())
+                    .organisationId(organisationId)
+                    .amount(amount != null ? amount.toDomain() : null)
+                    .build();
     }
 
 }

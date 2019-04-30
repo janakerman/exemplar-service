@@ -5,11 +5,11 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 import org.junit.Test;
 
 import com.janakerman.exemplarservice.domain.Payment;
-import com.janakerman.exemplarservice.exception.PaymentValidationException;
 
 public class UpdatePaymentTests {
 
@@ -18,14 +18,18 @@ public class UpdatePaymentTests {
         UpdatePayment updatePayment = UpdatePayment.builder()
             .id("id")
             .organisationId("org1")
-            .amount("20.00")
+            .amount(Amount.builder()
+                    .value("20.00")
+                    .currencyCode("GBP")
+                    .build())
             .build();
 
         Payment domain = updatePayment.toDomain();
 
         assertThat(domain.getId(), equalTo(updatePayment.getId()));
         assertThat(domain.getOrganisationId(), equalTo(updatePayment.getOrganisationId()));
-        assertThat(domain.getAmount(), equalTo(new BigDecimal("20.00")));
+        assertThat(domain.getAmount().getAmount(), equalTo(new BigDecimal("20.00")));
+        assertThat(domain.getAmount().getCurrency(), equalTo(Currency.getInstance("GBP")));
     }
 
     @Test
@@ -39,15 +43,5 @@ public class UpdatePaymentTests {
         assertThat(domain.getId(), equalTo(updatePayment.getId()));
         assertThat(domain.getOrganisationId(), nullValue());
         assertThat(domain.getAmount(), nullValue());
-    }
-
-    @Test(expected = PaymentValidationException.class)
-    public void toDomainNonNumericAmountThrows() {
-        UpdatePayment updatePayment = UpdatePayment.builder()
-            .organisationId("org1")
-            .amount("non numeric")
-            .build();
-
-        updatePayment.toDomain();
     }
 }
