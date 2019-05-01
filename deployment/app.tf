@@ -15,6 +15,7 @@ resource "aws_iam_policy" "access_policy" {
                 "dynamodb:BatchGetItem",
                 "dynamodb:PutItem",
                 "dynamodb:GetItem",
+                "dynamodb:DeleteItem",
                 "dynamodb:Scan",
                 "dynamodb:Query",
                 "dynamodb:UpdateItem"
