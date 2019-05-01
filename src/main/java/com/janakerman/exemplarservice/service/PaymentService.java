@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.janakerman.exemplarservice.domain.Payment;
 import com.janakerman.exemplarservice.exception.PaymentNotFoundException;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
-import com.janakerman.exemplarservice.repository.dao.PaymentDao;
+import com.janakerman.exemplarservice.repository.entity.PaymentEntity;
 
 @Component
 public class PaymentService {
@@ -28,7 +28,7 @@ public class PaymentService {
 
     public Payment createPayment(Payment payment) {
         paymentValidationService.validateCreatePayment(payment);
-        return paymentRepository.save(PaymentDao.toDao(payment))
+        return paymentRepository.save(PaymentEntity.toDao(payment))
             .toPayment();
     }
 
@@ -41,7 +41,7 @@ public class PaymentService {
 
         Payment updated = old.updateFrom(payment);
 
-        return paymentRepository.save(PaymentDao.toDao(updated))
+        return paymentRepository.save(PaymentEntity.toDao(updated))
             .toPayment();
     }
 
@@ -57,7 +57,7 @@ public class PaymentService {
 
     public List<Payment> getPayments() {
         return StreamSupport.stream(paymentRepository.findAll().spliterator(), false)
-            .map(PaymentDao::toPayment)
+            .map(PaymentEntity::toPayment)
             .collect(Collectors.toList());
     }
 

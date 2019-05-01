@@ -1,4 +1,4 @@
-package com.janakerman.exemplarservice.repository.dao;
+package com.janakerman.exemplarservice.repository.entity;
 
 
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.janakerman.exemplarservice.domain.Payment;
 
-public class PaymentDaoTests {
+public class PaymentEntityTests {
 
     @Test
     public void toDao() {
@@ -22,7 +22,7 @@ public class PaymentDaoTests {
             .amount(Amount.of("1", "GBP"))
             .build();
 
-        PaymentDao dao = PaymentDao.toDao(payment);
+        PaymentEntity dao = PaymentEntity.toDao(payment);
 
         assertThat(dao.getId(), equalTo("id"));
         assertThat(dao.getOrganisationId(), equalTo("org1"));
@@ -32,7 +32,7 @@ public class PaymentDaoTests {
 
     @Test
     public void toPayment() {
-        PaymentDao dao = PaymentDao.builder()
+        PaymentEntity dao = PaymentEntity.builder()
             .id("id")
             .organisationId("org1")
             .amount(Amount.of("20.00", "GBP"))

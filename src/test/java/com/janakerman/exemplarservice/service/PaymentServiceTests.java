@@ -23,7 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.janakerman.exemplarservice.domain.Payment;
 import com.janakerman.exemplarservice.exception.PaymentNotFoundException;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
-import com.janakerman.exemplarservice.repository.dao.PaymentDao;
+import com.janakerman.exemplarservice.repository.entity.PaymentEntity;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
@@ -50,16 +50,16 @@ public class PaymentServiceTests {
             .amount(Amount.of("20.00", "GBP"))
             .build();
 
-        when(paymentRepository.save(any())).thenReturn(PaymentDao.toDao(payment));
+        when(paymentRepository.save(any())).thenReturn(PaymentEntity.toDao(payment));
 
         Payment retPayment = paymentService.createPayment(payment);
 
-        ArgumentCaptor<PaymentDao> argumentCaptor = ArgumentCaptor.forClass(PaymentDao.class);
+        ArgumentCaptor<PaymentEntity> argumentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
         verify(paymentRepository).save(argumentCaptor.capture());
 
-        PaymentDao savedPayment = argumentCaptor.getValue();
+        PaymentEntity savedPayment = argumentCaptor.getValue();
 
-        assertThat(savedPayment, equalTo(PaymentDao.toDao(payment)));
+        assertThat(savedPayment, equalTo(PaymentEntity.toDao(payment)));
 
         assertThat(retPayment, equalTo(payment));
     }
@@ -73,7 +73,7 @@ public class PaymentServiceTests {
             .build();
 
         when(paymentRepository.findById(payment.getId()))
-            .thenReturn(Optional.of(PaymentDao.toDao(payment)));
+            .thenReturn(Optional.of(PaymentEntity.toDao(payment)));
 
         Payment retPayment = paymentService.getPayment(payment.getId());
         assertThat(retPayment, equalTo(payment));
@@ -103,10 +103,10 @@ public class PaymentServiceTests {
             .build();
 
         List<Payment> paymentList = Arrays.asList(payment1, payment2);
-        List<PaymentDao> paymentDaoList = Arrays.asList(PaymentDao.toDao(payment1), PaymentDao.toDao(payment2));
+        List<PaymentEntity> paymentEntityList = Arrays.asList(PaymentEntity.toDao(payment1), PaymentEntity.toDao(payment2));
 
         when(paymentRepository.findAll())
-            .thenReturn(paymentDaoList );
+            .thenReturn(paymentEntityList);
 
         List<Payment> retPayments = paymentService.getPayments();
         assertThat(retPayments, equalTo(paymentList));
@@ -126,16 +126,16 @@ public class PaymentServiceTests {
             .build();
 
         when(paymentRepository.findById(updatedPayment.getId()))
-            .thenReturn(Optional.of(PaymentDao.toDao(oldPayment)));
+            .thenReturn(Optional.of(PaymentEntity.toDao(oldPayment)));
 
         when(paymentRepository.save(any()))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         paymentService.updatePayment(updatedPayment);
 
-        ArgumentCaptor<PaymentDao> argumentCaptor = ArgumentCaptor.forClass(PaymentDao.class);
+        ArgumentCaptor<PaymentEntity> argumentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
         verify(paymentRepository).save(argumentCaptor.capture());
-        PaymentDao savedPayment = argumentCaptor.getValue();
+        PaymentEntity savedPayment = argumentCaptor.getValue();
 
         assertThat(savedPayment.getOrganisationId(), equalTo(updatedPayment.getOrganisationId()));
     }

@@ -37,7 +37,7 @@ import com.janakerman.exemplarservice.dto.CreatePayment;
 import com.janakerman.exemplarservice.dto.Payment;
 import com.janakerman.exemplarservice.dto.UpdatePayment;
 import com.janakerman.exemplarservice.repository.PaymentRepository;
-import com.janakerman.exemplarservice.repository.dao.PaymentDao;
+import com.janakerman.exemplarservice.repository.entity.PaymentEntity;
 import com.janakerman.exemplarservice.test.LocalDynamoDBCreationRule;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -132,7 +132,7 @@ public class PaymentTests extends BaseAcceptanceTests {
         assertThat(payment.getOrganisationId(), equalTo(createCommand.getOrganisationId()));
         assertThat(payment.getAmount(), equalTo(createCommand.getAmount()));
 
-        PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
+        PaymentEntity paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
         assertThat(paymentDomain.getId(), notNullValue());
         assertThat(paymentDomain.getOrganisationId(), equalTo(createCommand.getOrganisationId()));
         assertThat(paymentDomain.getAmount().getAmount(), equalTo(new BigDecimal("20.00")));
@@ -164,7 +164,7 @@ public class PaymentTests extends BaseAcceptanceTests {
         assertThat(updatedPayment.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));
         assertThat(updatedPayment.getAmount(), equalTo(updateCommand.getAmount()));
 
-        PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
+        PaymentEntity paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
         assertThat(paymentDomain.getId(), equalTo(updateCommand.getId()));
         assertThat(paymentDomain.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));
         assertThat(paymentDomain.getAmount().getAmount(), equalTo(new BigDecimal("30.00")));
@@ -193,7 +193,7 @@ public class PaymentTests extends BaseAcceptanceTests {
         .extract()
             .as(Payment.class);
 
-        PaymentDao paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
+        PaymentEntity paymentDomain = Lists.newArrayList(repository.findAll()).get(0);
 
         // Organisation field is updated.
         assertThat(updatedPayment.getOrganisationId(), equalTo(updateCommand.getOrganisationId()));

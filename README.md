@@ -109,7 +109,7 @@ with the **Domain** objects. In this example service there is very little busine
 communicates with other external interfaces that the service depends on to function.
 
 In this example, the **Service layer** communicates with the **Repository layer** to persist payment domain objects. It calls onto
-classes in the Repository layer to transform the Domain objects into the database representation (Data Access Objects).
+classes in the Repository layer to transform the Domain objects into the database representation (Entities).
 
 ##### Validation
 
@@ -123,7 +123,7 @@ The Payment Domain object is similar to the DTO except that it stores the amount
 
 #### Repository
 
-The **Repository layer** is responsible for persisting entities (DAO). The persistence option for this layer was chosen to be a 
+The **Repository layer** is responsible for persisting entities. The persistence option for this layer was chosen to be a 
 NoSQL store, DynamoDB. NoSQL databases are quick to get up and running with due to an implied schema rather than one enforced with
 constraints and relationships. DynamoDB provides a production ready document store, suitable for operating at scale, with very little up-front effort.
 

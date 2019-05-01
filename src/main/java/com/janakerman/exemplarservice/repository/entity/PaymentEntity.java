@@ -1,4 +1,4 @@
-package com.janakerman.exemplarservice.repository.dao;
+package com.janakerman.exemplarservice.repository.entity;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.janakerman.exemplarservice.domain.Amount;
@@ -16,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class PaymentDao {
+public class PaymentEntity {
     private String id;
     private String organisationId;
     private Amount amount;
@@ -37,8 +37,8 @@ public class PaymentDao {
         return amount;
     }
 
-    static public PaymentDao toDao(Payment payment) {
-        return PaymentDao.builder()
+    static public PaymentEntity toDao(Payment payment) {
+        return PaymentEntity.builder()
             .id(payment.getId())
             .organisationId(payment.getOrganisationId())
             .amount(payment.getAmount())
